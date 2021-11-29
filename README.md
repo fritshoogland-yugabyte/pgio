@@ -11,20 +11,20 @@ To remove:
 After installation you have to insert at least one row in the table pgio.config.
 The table pgio.config has default values for every column, so you only have to change the fields you want different:
 ```
-rows 				        bigint  default 1000000,
+rows 			        bigint  default 1000000,
 create_batch_size 	        bigint  default 1000,
 number_schemas		        int     default 1,
-table_primary_key		    boolean default true,
-table_primary_key_type	    text    default 'hash',
-table_tablets			    int     default 0,
+table_primary_key	    	boolean default true,
+table_primary_key_type	    	text    default 'hash',
+table_tablets			int     default 0,
 table_f1_range		        bigint  default 1000000,
-index_f1			        boolean default false,
-index_f1_type			    text    default 'hash',
-index_f1_tablets		    int     default 0,
+index_f1			boolean default false,
+index_f1_type			text    default 'hash',
+index_f1_tablets		int     default 0,
 table_f2_width		        int     default 100,
 run_batch_size		        bigint  default 1000,
-update_pct			        int     default 0,
-delete_pct			        int     default 0
+update_pct			int     default 0,
+delete_pct			int     default 0
 ```
 For example:
 1. create config:
