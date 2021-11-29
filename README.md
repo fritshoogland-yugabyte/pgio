@@ -17,6 +17,7 @@ The table pgio.config has default values for every column, so you only have to c
 ```
 rows 			        bigint  default 1000000,
 create_batch_size 	        bigint  default 1000,
+create_method			text	default 'unnest',
 number_schemas		        int     default 1,
 table_primary_key	    	boolean default true,
 table_primary_key_type	    	text    default 'hash',
@@ -59,7 +60,7 @@ delete_pct             | 0
 3. setup config: 
 ```
 -- please mind that it will drop the schema prior to creating it.
--- number is config number.
+-- number is pgio.config.id number.
 call pgio.setup(1);
 ```
 4. run config:
@@ -70,10 +71,11 @@ call pgio.runit(1,1);
 ```
 5. (optionally) remove schema
 ```
-call pgio.remove();
+-- number is pgio.config.id number.
+call pgio.remove(1);
 ```
 
 If you specifiy multiple schemas, the setup procedure will fill the schemas sequentially.
 If you want to run against multiple schemas at the same time you have to start these manually for each schema.
 
-Frits Hoogland, Yugabyte.
+Frits Hoogland, Yugabyte (fhoogland@yugabyte.com).
