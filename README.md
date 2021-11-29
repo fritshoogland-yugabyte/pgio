@@ -1,5 +1,6 @@
 This is the yugabyte version of pgio.
 This is a toolkit meant for performing Yugabyte YSQL database transactions.
+This toolkit is strongly inspired on Kevin Closson's SLOB and pgio tools/projects, and the work Franck Pachot based on that.
 
 To install:
 ```
