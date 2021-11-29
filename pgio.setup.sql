@@ -16,6 +16,7 @@ begin
   select number_schemas, 
          rows, 
          create_batch_size, 
+         create_method,
          table_primary_key, 
          table_primary_key_type, 
          table_tablets, 
@@ -27,6 +28,7 @@ begin
   into   v_number_schemas, 
          v_rows, 
          v_create_batch_size, 
+         v_create_method,
          v_table_primary_key, 
          v_table_primary_key_type, 
          v_table_tablets, 
@@ -60,6 +62,6 @@ begin
       );
     end if;
     -- and insert data
-    call pgio.insert(v_rows, v_create_batch_size, v_table_f2_width, v_table_f1_range, schema_nr );
+    call pgio.insert(v_rows, v_create_batch_size, v_table_f2_width, v_table_f1_range, schema_nr, v_create_method );
   end loop;
 end $$;

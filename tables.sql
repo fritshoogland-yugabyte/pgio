@@ -7,6 +7,7 @@
 -- * changing the PK and field f1 index type (from 'hash' to 'asc' or 'desc').
 -- * enabling an index on field f1 (defafult false (not)).
 -- * changing the creation commit batch size (create_batch_size).
+-- * changing the creation method: unnest creates an array that is unnested at create_batch_size, row performs simple insert commands
 -- * changing the run commit batch size (run_batch_size).
 -- * the number of tablets for the table (table_tablets)
 -- * the number of tablets for the index on f1 (index_f1_tablets)
@@ -17,6 +18,7 @@ create table pgio.config (
   id 				        serial  primary key,
   rows 				        bigint  default 1000000,
   create_batch_size 	    bigint  default 1000,
+  create_method             text    default 'unnest',
   number_schemas		    int     default 1,
   table_primary_key		    boolean default true,
   table_primary_key_type	text    default 'hash',

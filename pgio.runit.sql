@@ -63,13 +63,17 @@ begin
           v_update_counter := v_update_counter + v_run_batch_size;
         end if;
       when v_random <= v_delete_pct_until then
-        delete from benchmark_table where id between v_random_row and v_random_row+v_batch_size;
+        delete from benchmark_table where id between v_random_row and v_random_row+v_run_batch_size;
         if not found then
           v_notfound_counter := v_notfound_counter +1;
         else
           v_delete_counter := v_delete_counter + v_run_batch_size;
         end if;
     end case;
+    if mod(select_counter+v_update_counter+v_delete_counter, v_run_batch_size) = 0 then
+      raise notice 'current time: %, select/update/delete/notfound: %/%/%/%, average: % per second', round(extract(epoch from clock_timestamp()-v_clock_begin)), v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter, to_char(round((v_select_counter+v_update_counter+v_delete_counter)/extract(epoch from clock_timestamp()-v_clock_begin)),'99999999');
+      commit;
+    end if;
   end loop;
   v_clock_end := clock_timestamp();
   raise notice 'total time: %, batch size: %, select/update/delete/notfound: %/%/%/%, average: % per second', round(extract(epoch from v_clock_end-v_clock_begin)), v_run_batch_size, v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter, to_char(round((v_select_counter+v_update_counter+v_delete_counter)/extract(epoch from v_clock_end-v_clock_begin)),'99999999');

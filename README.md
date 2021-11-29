@@ -2,10 +2,14 @@ This is the yugabyte version of pgio.
 This is a toolkit meant for performing Yugabyte YSQL database transactions.
 
 To install:
-`\i setup.sql`
+```
+\i setup.sql
+```
 
 To remove:
-`\i uninstall.sql`
+```
+\i uninstall.sql
+```
 (uninstall does not remove the orafce extension)
 
 After installation you have to insert at least one row in the table pgio.config.
