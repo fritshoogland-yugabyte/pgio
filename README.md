@@ -28,7 +28,9 @@ delete_pct			int     default 0
 ```
 For example:
 1. create config:
-`insert into pgio.config (rows) values (1000000);`
+```
+insert into pgio.config (rows) values (1000000);
+```
 2. verify config:
 ```
 \x
