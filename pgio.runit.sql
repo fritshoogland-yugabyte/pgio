@@ -70,7 +70,7 @@ begin
           v_delete_counter := v_delete_counter + v_run_batch_size;
         end if;
     end case;
-    if mod(select_counter+v_update_counter+v_delete_counter, v_run_batch_size) = 0 then
+    if mod(v_select_counter+v_update_counter+v_delete_counter, v_run_batch_size) = 0 then
       raise notice 'current time: %, select/update/delete/notfound: %/%/%/%, average: % per second', round(extract(epoch from clock_timestamp()-v_clock_begin)), v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter, to_char(round((v_select_counter+v_update_counter+v_delete_counter)/extract(epoch from clock_timestamp()-v_clock_begin)),'99999999');
       commit;
     end if;
