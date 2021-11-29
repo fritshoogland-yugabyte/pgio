@@ -12,6 +12,7 @@ declare
   v_index_f1 boolean;
   v_index_f1_type text;
   v_index_f1_tablets int;
+  v_create_method text;
 begin
   select number_schemas, 
          rows, 
