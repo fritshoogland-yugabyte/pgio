@@ -1,4 +1,4 @@
-create or replace procedure pgio.setup ( config_id int, perform_schema_nr default 0 )
+create or replace procedure pgio.setup ( config_id int, perform_schema_nr int default 0 )
 language plpgsql as $$
 declare
   v_number_schemas int;
