@@ -11,7 +11,7 @@ To remove:
 ```
 \i uninstall.sql
 ```
-(uninstall does not remove the orafce extension)
+(uninstall does not remove the orafce extension, if you want to remove that, run `drop extension orafce;`)
 
 After installation you have to insert at least one row in the table pgio.config.
 The table pgio.config has default values for every column, so you only have to change the fields you want different:
