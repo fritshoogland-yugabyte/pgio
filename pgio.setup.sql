@@ -68,7 +68,8 @@ begin
      call pgio.insert(v_rows, v_create_batch_size, v_table_f2_width, v_table_f1_range, schema_nr, v_create_method );
    end loop;
   else
-    -- if perform_schema_nr is a number, only this schema is created and filled serially.   
+    -- if perform_schema_nr higher than zero, only that schema is created and filled serially.   
+    -- so that other schema's can be created by other processes in parallel.
     if perform_schema_nr > v_number_schemas then
       raise exception 'schema nr % too high, maximal number of config % is %', perform_schema_nr, config_id, v_number_schemas;
     end if;
