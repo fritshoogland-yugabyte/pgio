@@ -26,7 +26,7 @@ begin
           clock_batch := clock_timestamp();
         end if;
       exception
-        when sqlstate = '40001' then
+        when sqlstate '40001' then
           raise notice 'retrying on sqlstate %, message %', sqlstate, sqlerrm;
       end;
     end loop;
@@ -46,7 +46,7 @@ begin
           clock_batch := clock_timestamp();
         end if;
       exception
-        when sqlstate = '40001' then
+        when sqlstate '40001' then
           raise notice 'retrying on sqlstate %, message %', sqlstate, sqlerrm;
       end;
     end loop;
