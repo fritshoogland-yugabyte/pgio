@@ -11,19 +11,24 @@ begin
   clock_batch := clock_timestamp();
   if v_insert_type = 'unnest' then
     for i in 1..v_rows loop
-      i_id[i] := i;
-      i_f1[i] := dbms_random.value(1,v_table_f1_range);
-      i_f2[i] := dbms_random.string('a',v_table_f2_width);
-      if mod(i,v_create_batch_size) = 0 then
-        insert into benchmark_table (id, f1, f2)
-        select unnest(i_id), unnest(i_f1), unnest(i_f2);
-        i_id := '{}';
-        i_f1 := '{}';
-        i_f2 := '{}';
-        commit;
-        raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/v_rows),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
-        clock_batch := clock_timestamp();
-      end if;
+      begin
+        i_id[i] := i;
+        i_f1[i] := dbms_random.value(1,v_table_f1_range);
+        i_f2[i] := dbms_random.string('a',v_table_f2_width);
+        if mod(i,v_create_batch_size) = 0 then
+          insert into benchmark_table (id, f1, f2)
+          select unnest(i_id), unnest(i_f1), unnest(i_f2);
+          i_id := '{}';
+          i_f1 := '{}';
+          i_f2 := '{}';
+          commit;
+          raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/v_rows),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
+          clock_batch := clock_timestamp();
+        end if;
+      exception
+        when sqlstate = '40001' then
+          raise notice 'retrying on sqlstate %, message %', sqlstate, sqlerrm;
+      end;
     end loop;
     if array_length(i_id,1) > 0 then
       insert into benchmark_table (id, f1, f2)
@@ -33,12 +38,17 @@ begin
   end if;
   if v_insert_type = 'row' then
     for i in 1..v_rows loop
-      insert into benchmark_table (id, f1, f2) values (i, dbms_random.value(1,v_table_f1_range), dbms_random.string('a',v_table_f2_width));
-      if mod(i,v_create_batch_size) = 0 then
-        commit;
-        raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/v_rows),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
-        clock_batch := clock_timestamp();
-      end if;
+      begin
+        insert into benchmark_table (id, f1, f2) values (i, dbms_random.value(1,v_table_f1_range), dbms_random.string('a',v_table_f2_width));
+        if mod(i,v_create_batch_size) = 0 then
+          commit;
+          raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/v_rows),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
+          clock_batch := clock_timestamp();
+        end if;
+      exception
+        when sqlstate = '40001' then
+          raise notice 'retrying on sqlstate %, message %', sqlstate, sqlerrm;
+      end;
     end loop;
     commit;
   end if;
