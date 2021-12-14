@@ -1,4 +1,4 @@
-create or replace procedure pgio.insert( v_rows bigint, v_create_batch_size bigint, v_table_f2_width int, v_table_f1_range bigint, v_schema int, v_insert_type text default 'unnest', v_additional_run_nr int )
+create or replace procedure pgio.insert( v_rows bigint, v_create_batch_size bigint, v_table_f2_width int, v_table_f1_range bigint, v_schema int, v_additional_run_nr int, v_insert_type text default 'unnest' )
 language plpgsql as $$
 declare
   i_id bigint[];
@@ -38,10 +38,10 @@ begin
       insert into benchmark_table (id, f1, f2)
       select unnest(i_id), unnest(i_f1), unnest(i_f2);
       commit;
-    end if; 
+    end if;
   end if;
   if v_insert_type = 'row' then
-    for i in 1..v_rows loop
+    for i in start_id..end_id loop
       begin
         insert into benchmark_table (id, f1, f2) values (i, dbms_random.value(1,v_table_f1_range), dbms_random.string('a',v_table_f2_width));
       exception
