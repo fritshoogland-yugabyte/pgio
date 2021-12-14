@@ -30,7 +30,7 @@ begin
             raise notice 'retrying on sqlstate %, message %', sqlstate, sqlerrm;
         end;
         commit;
-        raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/v_rows),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
+        raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/(end_id-start_id)),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
         clock_batch := clock_timestamp();
       end if;
     end loop;
@@ -50,7 +50,7 @@ begin
       end;
       if mod(i,v_create_batch_size) = 0 then
         commit;
-        raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/v_rows),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
+        raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/(end_id-start_id)),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
         clock_batch := clock_timestamp();
       end if;
     end loop;
