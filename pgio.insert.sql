@@ -1,4 +1,4 @@
-create or replace procedure pgio.insert( v_rows bigint, v_create_batch_size bigint, v_table_f2_width int, v_table_f1_range bigint, v_schema int, v_insert_type text default 'unnest' )
+create or replace procedure pgio.insert( v_rows bigint, v_create_batch_size bigint, v_table_f2_width int, v_table_f1_range bigint, v_schema int, v_insert_type text default 'unnest', v_additional_run_nr int )
 language plpgsql as $$
 declare
   i_id bigint[];
@@ -6,11 +6,15 @@ declare
   i_f2 text[];
   clock_batch timestamp;
   clock_begin timestamp := clock_timestamp();
+  start_id int;
+  end_id int;
 begin
-  raise notice 'inserting % rows into schema pgio% with batchsize %, method: %', v_rows, v_schema, v_create_batch_size, v_insert_type;
+  start_id := v_rows * v_additional_run_nr;
+  end_id := start_id + v_rows - 1;
+  raise notice 'inserting % rows into schema pgio% with batchsize %, method: %, start id: %', v_rows, v_schema, v_create_batch_size, v_insert_type, start_id;
   clock_batch := clock_timestamp();
   if v_insert_type = 'unnest' then
-    for i in 1..v_rows loop
+    for i in start_id..end_id loop
       i_id[i] := i;
       i_f1[i] := dbms_random.value(1,v_table_f1_range);
       i_f2[i] := dbms_random.string('a',v_table_f2_width);
@@ -52,5 +56,5 @@ begin
     end loop;
     commit;
   end if;
-  raise notice 'done inserting into pgio%, % rows, % rows/second', v_schema, v_rows, to_char(v_rows/extract(epoch from clock_timestamp()-clock_begin),'999999');
+  raise notice 'done inserting into pgio%, % rows, % rows/second, start id: %', v_schema, v_rows, to_char(v_rows/extract(epoch from clock_timestamp()-clock_begin),'999999'), start_id;
 end $$;

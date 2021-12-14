@@ -61,7 +61,13 @@ delete_pct             | 0
 3. setup config: 
 ```
 -- please mind that it will drop the schema prior to creating it.
--- number is pgio.config.id number.
+-- first argument is pgio.config.id number, mandatory.
+-- second optional argument by default is 0, which works on all schema's set with pgio.config.number_schemas sequentually..
+   Setting 1 or higher will only load a single schema.
+   ->This allows multiple schema's to be loaded concurrently.
+-- third optional argument by default is 0, which will load PK id's from 0 to pgio.config.rows - 1.
+   Setting 1 or higher will load PKs from pgio.config.rows * NR to (pgio.config.rows * NR) + pgio.config.rows - 1.
+   ->This allows multiple inserters into the same table concurrently.
 call pgio.setup(1);
 ```
 4. run config:

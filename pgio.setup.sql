@@ -1,4 +1,4 @@
-create or replace procedure pgio.setup ( config_id int, perform_schema_nr int default 0 )
+create or replace procedure pgio.setup ( config_id int, perform_schema_nr int default 0, additional_run_nr int default 0 )
 language plpgsql as $$
 declare
   v_number_schemas int;
@@ -46,12 +46,42 @@ begin
   if perform_schema_nr = 0 then
    -- if perform_schema_nr = 0, all schemas are created and filled serially.
    for schema_nr in 1..v_number_schemas loop
-     -- drop schema if it already exists
-     execute format('drop schema if exists pgio%s cascade', schema_nr);
+     if additional_run_nr > 0 then
+      -- drop schema if it already exists
+      execute format('drop schema if exists pgio%s cascade', schema_nr);
+      -- create schema
+      execute format('create schema pgio%s', schema_nr);
+      -- set search_path to schema, so the table is created in the schema
+      execute format('set search_path to pgio%s', schema_nr);
+      -- create the table
+      execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text %s ) %s',
+        case v_table_primary_key when true then format(', primary key ( id %s)', v_table_primary_key_type) else '' end, 
+        case v_table_tablets when 0 then '' else format('split into %s tablets', v_table_tablets) end
+      );
+      -- if an index is chosen, create an index
+      if v_index_f1 then
+        execute format('create index benchmark_table_i_f1 on benchmark_table( f1 %s ) %s',
+          v_index_f1_type,
+          case v_index_f1_tablets when 0 then '' else format('split into %s tablets', v_index_f1_tablets) end
+        );
+      end if;
+     end if;
+     -- and insert data
+     call pgio.insert(v_rows, v_create_batch_size, v_table_f2_width, v_table_f1_range, schema_nr, v_create_method );
+   end loop;
+  else
+   if additional_run_nr > 0 then
+    if additional_run_nr > 0 then
+     -- if perform_schema_nr higher than zero, only that schema is created and filled serially.   
+     -- so that other schema's can be created by other processes in parallel.
+     if perform_schema_nr > v_number_schemas then
+       raise exception 'schema nr % too high, maximal number of config % is %', perform_schema_nr, config_id, v_number_schemas;
+     end if;
+     execute format('drop schema if exists pgio%s cascade', perform_schema_nr);
      -- create schema
-     execute format('create schema pgio%s', schema_nr);
+     execute format('create schema pgio%s', perform_schema_nr);
      -- set search_path to schema, so the table is created in the schema
-     execute format('set search_path to pgio%s', schema_nr);
+     execute format('set search_path to pgio%s', perform_schema_nr);
      -- create the table
      execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text %s ) %s',
        case v_table_primary_key when true then format(', primary key ( id %s)', v_table_primary_key_type) else '' end, 
@@ -64,33 +94,8 @@ begin
          case v_index_f1_tablets when 0 then '' else format('split into %s tablets', v_index_f1_tablets) end
        );
      end if;
-     -- and insert data
-     call pgio.insert(v_rows, v_create_batch_size, v_table_f2_width, v_table_f1_range, schema_nr, v_create_method );
-   end loop;
-  else
-    -- if perform_schema_nr higher than zero, only that schema is created and filled serially.   
-    -- so that other schema's can be created by other processes in parallel.
-    if perform_schema_nr > v_number_schemas then
-      raise exception 'schema nr % too high, maximal number of config % is %', perform_schema_nr, config_id, v_number_schemas;
-    end if;
-    execute format('drop schema if exists pgio%s cascade', perform_schema_nr);
-    -- create schema
-    execute format('create schema pgio%s', perform_schema_nr);
-    -- set search_path to schema, so the table is created in the schema
-    execute format('set search_path to pgio%s', perform_schema_nr);
-    -- create the table
-    execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text %s ) %s',
-      case v_table_primary_key when true then format(', primary key ( id %s)', v_table_primary_key_type) else '' end, 
-      case v_table_tablets when 0 then '' else format('split into %s tablets', v_table_tablets) end
-    );
-    -- if an index is chosen, create an index
-    if v_index_f1 then
-      execute format('create index benchmark_table_i_f1 on benchmark_table( f1 %s ) %s',
-        v_index_f1_type,
-        case v_index_f1_tablets when 0 then '' else format('split into %s tablets', v_index_f1_tablets) end
-      );
     end if;
     -- and insert data
-    call pgio.insert(v_rows, v_create_batch_size, v_table_f2_width, v_table_f1_range, perform_schema_nr, v_create_method );
+    call pgio.insert(v_rows, v_create_batch_size, v_table_f2_width, v_table_f1_range, perform_schema_nr, v_create_method, v_additional_run_nr );
   end if;
 end $$;
