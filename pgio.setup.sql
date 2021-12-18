@@ -59,7 +59,7 @@ begin
    */
   if p_perform_schema_nr = 0 then
 
-    for v_schema_nr in 1..v_number_schemas loop
+    for v_schema_nr in 1..v_create_number_schemas loop
 
       /*
        * p_additional_run_nr makes it possible to perform an additional run of inserts into the same 

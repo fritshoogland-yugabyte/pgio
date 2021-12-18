@@ -1,4 +1,4 @@
-create or replace procedure pgio.insert( p_rows bigint, p_create_rows_per_commit bigint, p_table_f2_width int, p_table_f1_range bigint, p_schema int, p_additional_run_nr int, p_create_method text default 'unnest', p_rows_per_message int default 0  )
+create or replace procedure pgio.insert( p_rows bigint, p_create_rows_per_commit bigint, p_table_f2_width int, p_table_f1_range bigint, p_schema int, p_additional_run_nr int, p_create_method text default 'unnest', p_rows_per_message bigint default 0  )
 language plpgsql as $$
 declare
   array_id bigint[];
@@ -37,9 +37,9 @@ begin
       /*
        * build the array
        */
-      array_id[i] := i;
-      array_f1[i] := dbms_random.value(1,v_table_f1_range);
-      array_f2[i] := dbms_random.string('a',v_table_f2_width);
+      array_id[v_counter] := v_counter;
+      array_f1[v_counter] := dbms_random.value(1,p_table_f1_range);
+      array_f2[v_counter] := dbms_random.string('a',p_table_f2_width);
 
       /*
        * insert the rows using the array, commit and then empty the array.
@@ -56,14 +56,14 @@ begin
       /*
        * report the progress.
        */
-      if mod(v_counter, p_rows_per_message) = 0 then
+      if mod(v_counter, p_rows_per_message) = 0 and v_counter != 0 then
         raise notice 'progress: % rows, %, % rows/second', 
           v_counter-v_start_id, 
           to_char((100*(v_counter-v_start_id::float)/(v_end_id-v_start_id)),'999.99')||'%', 
           to_char(p_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999999'
         );
         v_clock_batch := clock_timestamp();
-      end if
+      end if;
 
     end loop;
 
@@ -93,7 +93,7 @@ begin
       /*
        * the insert command.
        */
-      insert into benchmark_table (id, f1, f2) values (i, dbms_random.value(1,v_table_f1_range), dbms_random.string('a',v_table_f2_width));
+      insert into benchmark_table (id, f1, f2) values (v_counter, dbms_random.value(1,p_table_f1_range), dbms_random.string('a',p_table_f2_width));
 
       /*
        * commit.
@@ -105,7 +105,7 @@ begin
       /*
        * report the progress.
        */
-      if mod(v_counter, p_rows_per_message) then
+      if mod(v_counter, p_rows_per_message) = 0 and v_counter != 0 then
         raise notice 'progress: % rows, %, % rows/second', 
           v_counter-v_start_id, 
           to_char((100*(v_counter-v_start_id::float)/(v_end_id-v_start_id)),'999.99')||'%', 
@@ -131,6 +131,6 @@ begin
   end if;
 
   raise notice 'done inserting % rows (id % to %) into schema pgio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
-  raise notice 'total time: %, average number of rows per second: %', extract(epoch from clock_timestamp()-v_clock_begin), to_char(v_rows/extract(epoch from clock_timestamp()-v_clock_begin),'999999');
+  raise notice 'total time: % seconds, average number of rows per second: %', round(extract(epoch from clock_timestamp()-v_clock_begin)::numeric,2), to_char((v_end_id-v_start_id)/extract(epoch from clock_timestamp()-v_clock_begin),'999999');
 
 end $$;
