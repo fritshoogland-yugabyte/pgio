@@ -81,7 +81,8 @@ begin
   v_delete_pct_until := v_update_pct_until + v_run_delete_pct;
 
   raise notice 'run on schema pgio%, duration: %.', p_schema, p_runtime;
-  raise notice 'work ratios select / update / delete: % / % / %', v_select_pct_until, v_update_pct_until, v_delete_pct_until;
+  raise notice 'work ratios select / update / delete: % / % / %', v_select_pct_until, v_run_update_pct, v_run_delete_pct;
+  raise notice 'selected id range in scan: %', v_run_range;
   execute format('set search_path to pgio%s', p_schema);
   v_clock_batch := clock_timestamp();
 
@@ -150,26 +151,29 @@ begin
     /*
      * commit per v_run_rows_per_commit. it doesn't make sense to commit for selects, but it shouldn't matter.
      */
-    if mod(v_select_counter+v_update_counter+v_delete_counter, v_run_rows_per_commit) = 0 then
+    if mod(v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter, v_run_rows_per_commit) = 0 then
       commit;
     end if;
 
     /*
      * report progress.
      */
-    if mod(v_select_counter+v_update_counter+v_delete_counter, v_rows_per_message) = 0 then
+    if mod(v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter, v_rows_per_message) = 0 then
       raise notice 'runtime: % seconds, rows: select / update / delete / notfound: % / % / % / %, average: % per second', round(extract(epoch from clock_timestamp()-v_clock_begin)), v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter, to_char(v_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'99999999');
       v_clock_batch := clock_timestamp();
     end if;
 
   end loop;
 
+  /*
+   * end of run summary.
+   */
   raise notice 'run on schema pgio%, duration: % finished.', p_schema, p_runtime;
-  raise notice 'work ratios select / update / delete: % / % / %', v_select_pct_until, v_update_pct, v_delete_pct;
+  raise notice 'work ratios select / update / delete: % / % / %; range: %', v_select_pct_until, v_run_update_pct, v_run_delete_pct, v_run_range;
   raise notice 'rows per commit: %, rows per message: %', v_run_rows_per_commit, v_rows_per_message;
   raise notice 'rows processed: select / update / delete / notfound: % / % / % / %', v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter;
-  raise notice 'total time: %, average number of rows per second: %', 
+  raise notice 'total time: % seconds, average number of rows per second: %', 
     round(extract(epoch from clock_timestamp()-v_clock_begin)::numeric,2), 
-    to_char(round((v_select_counter+v_update_counter+v_delete_counter)/extract(epoch from clock_timestamp()-v_clock_begin)),'99999999');
+    to_char((v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter)/extract(epoch from clock_timestamp()-v_clock_begin),'99999999');
 
 end $$;

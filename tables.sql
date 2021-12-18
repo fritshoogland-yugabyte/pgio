@@ -29,7 +29,7 @@ create table pgio.config (
   index_f1_type			    text    default 'hash',
   index_f1_tablets		    int     default 0,
   table_f2_width		    int     default 100,
-  run_rows_per_commit		    bigint  default 1000,
+  run_rows_per_commit		    bigint  default 10000,
   run_update_pct		    int     default 0,
   run_delete_pct		    int     default 0,
   run_range                         int     default 1
