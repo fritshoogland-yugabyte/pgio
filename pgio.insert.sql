@@ -1,50 +1,136 @@
-create or replace procedure pgio.insert( v_rows bigint, v_create_batch_size bigint, v_table_f2_width int, v_table_f1_range bigint, v_schema int, v_additional_run_nr int, v_insert_type text default 'unnest' )
+create or replace procedure pgio.insert( p_rows bigint, p_create_rows_per_commit bigint, p_table_f2_width int, p_table_f1_range bigint, p_schema int, p_additional_run_nr int, p_create_method text default 'unnest', p_rows_per_message int default 0  )
 language plpgsql as $$
 declare
-  i_id bigint[];
-  i_f1 bigint[];
-  i_f2 text[];
-  clock_batch timestamp;
-  clock_begin timestamp := clock_timestamp();
-  start_id int;
-  end_id int;
+  array_id bigint[];
+  array_f1 bigint[];
+  array_f2 text[];
+  v_clock_batch timestamp;
+  v_clock_begin timestamp := clock_timestamp();
+  v_start_id int := p_rows * p_additional_run_nr;
+  v_end_id int := v_start_id + p_rows - 1;
 begin
-  start_id := v_rows * v_additional_run_nr;
-  end_id := start_id + v_rows - 1;
-  raise notice 'inserting % rows into schema pgio% with batchsize %, method: %, start id: %', v_rows, v_schema, v_create_batch_size, v_insert_type, start_id;
-  clock_batch := clock_timestamp();
-  if v_insert_type = 'unnest' then
-    for i in start_id..end_id loop
-      i_id[i] := i;
-      i_f1[i] := dbms_random.value(1,v_table_f1_range);
-      i_f2[i] := dbms_random.string('a',v_table_f2_width);
-      if mod(i,v_create_batch_size) = 0 then
+  raise notice 'inserting % rows (id % to %) into schema pgio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
+  raise notice 'rows per commit: %', p_create_rows_per_commit;
+  v_clock_batch := clock_timestamp();
+
+  if p_create_method = 'unnest' then
+
+    raise notice 'create method: %. This means all % rows are inserted in a single command and committed.', p_create_method, v_end_id-v_start_id;
+
+    /*
+     * if p_rows_per_message = 0, which is the default, then set p_rows_per_message to p_create_rows_per_commit.
+     * if p_rows_per_message > 0, round it up to the next p_rows_per_message multiple.
+     * it doesn't make sense to report progress of the array creation.
+     */
+    if p_rows_per_message = 0 then
+      p_rows_per_message := p_create_rows_per_commit;
+    else
+      p_rows_per_message := (((p_rows_per_message/p_create_rows_per_commit)+1)*p_create_rows_per_commit);
+    end if;
+    raise notice 'progress is reported per % rows.', p_rows_per_message;
+
+    /*
+     * this is the main loop of the unnest batch insert method.
+     */
+    for v_counter in v_start_id..v_end_id loop
+
+      /*
+       * build the array
+       */
+      array_id[i] := i;
+      array_f1[i] := dbms_random.value(1,v_table_f1_range);
+      array_f2[i] := dbms_random.string('a',v_table_f2_width);
+
+      /*
+       * insert the rows using the array, commit and then empty the array.
+       */
+      if mod(v_counter, p_create_rows_per_commit) = 0 then
         insert into benchmark_table (id, f1, f2)
-          select unnest(i_id), unnest(i_f1), unnest(i_f2);
-        i_id := '{}';
-        i_f1 := '{}';
-        i_f2 := '{}';
+          select unnest(array_id), unnest(array_f1), unnest(array_f2);
+        array_id := '{}';
+        array_f1 := '{}';
+        array_f2 := '{}';
         commit;
-        raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/(end_id-start_id)),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
-        clock_batch := clock_timestamp();
       end if;
+
+      /*
+       * report the progress.
+       */
+      if mod(v_counter, p_rows_per_message) = 0 then
+        raise notice 'progress: % rows, %, % rows/second', 
+          v_counter-v_start_id, 
+          to_char((100*(v_counter-v_start_id::float)/(v_end_id-v_start_id)),'999.99')||'%', 
+          to_char(p_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999999'
+        );
+        v_clock_batch := clock_timestamp();
+      end if
+
     end loop;
-    if array_length(i_id,1) > 0 then
+
+    /*
+     * if there is a leftover in the array, insert it and commit.
+     */
+    if array_length(array_id,1) > 0 then
       insert into benchmark_table (id, f1, f2)
-      select unnest(i_id), unnest(i_f1), unnest(i_f2);
+        select unnest(array_id), unnest(array_f1), unnest(array_f2);
       commit;
     end if;
-  end if;
-  if v_insert_type = 'row' then
-    for i in start_id..end_id loop
+
+  elsif p_create_method = 'row' then
+
+    raise notice 'create method: %. This means all % rows are inserted using single row inserts.', p_create_method, v_end_id-v_start_id;
+
+    if p_rows_per_message = 0 then
+      p_rows_per_message := p_create_rows_per_commit;
+    end if;
+    raise notice 'progress is reported per % rows.', p_rows_per_message;
+
+    /*
+     * this is the main loop of the row insert method.
+     */
+    for v_counter in v_start_id..v_end_id loop
+
+      /*
+       * the insert command.
+       */
       insert into benchmark_table (id, f1, f2) values (i, dbms_random.value(1,v_table_f1_range), dbms_random.string('a',v_table_f2_width));
-      if mod(i,v_create_batch_size) = 0 then
+
+      /*
+       * commit.
+       */
+      if mod(v_counter, p_create_rows_per_commit) = 0 then
         commit;
-        raise notice 'progress: % rows, %, % rows/second', i, to_char((100*(i::float)/(end_id-start_id)),'999.99')||'%', to_char(v_create_batch_size/extract(epoch from clock_timestamp()-clock_batch),'999999');
-        clock_batch := clock_timestamp();
       end if;
+
+      /*
+       * report the progress.
+       */
+      if mod(v_counter, p_rows_per_message) then
+        raise notice 'progress: % rows, %, % rows/second', 
+          v_counter-v_start_id, 
+          to_char((100*(v_counter-v_start_id::float)/(v_end_id-v_start_id)),'999.99')||'%', 
+          to_char(v_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999999'
+        );
+        v_clock_batch := clock_timestamp();
+      end if;
+
     end loop;
+
+    /*
+     * commit leftover rows.
+     */
     commit;
+
+  else
+
+    /*
+     * this should not be possibe.
+     */
+    raise exception 'create_method % should be unnest or row', p_create_method;
+    
   end if;
-  raise notice 'done inserting into pgio%, % rows, % rows/second, start id: %', v_schema, v_rows, to_char(v_rows/extract(epoch from clock_timestamp()-clock_begin),'999999'), start_id;
+
+  raise notice 'done inserting % rows (id % to %) into schema pgio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
+  raise notice 'total time: %, average number of rows per second: %', extract(epoch from clock_timestamp()-clock_begin), to_char(v_rows/extract(epoch from clock_timestamp()-clock_begin),'999999');
+
 end $$;
