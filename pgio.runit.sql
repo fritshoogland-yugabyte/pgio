@@ -2,6 +2,7 @@ create or replace procedure pgio.runit( p_config_id int, p_schema int default 1,
 language plpgsql as $$
 declare
   v_rows bigint;
+  v_rows_per_message int;
   v_create_number_schemas int;
   v_table_f1_range bigint;
   v_table_f2_width int;
@@ -30,14 +31,16 @@ begin
    * raise exception and stop if not found.
    */
   select rows,
+         rows_per_message,
          create_number_schemas,
          table_f1_range,
          table_f2_width,
          run_rows_per_commit,
          run_range,
-         update_pct,
-         delete_pct
+         run_update_pct,
+         run_delete_pct
   into   v_rows,
+         v_rows_per_message,
          v_create_number_schemas,
          v_table_f1_range,
          v_table_f2_width,
@@ -59,23 +62,33 @@ begin
   end if;
 
   /*
+   * rows_per_message by default is 0, which means we take the figure from run_rows_per_commit.
+   * if a value is specified, we round it up to the next run_rows_per_commit.
+   */
+  if v_rows_per_message = 0 then
+    v_rows_per_message := v_run_rows_per_commit;
+  else
+    v_rows_per_message := (((v_rows_per_message/v_run_rows_per_commit)+1)*v_run_rows_per_commit);
+  end if;
+
+  /*
    * the action performed is dependent on a random number taken from 1 to 100.
    * the percentages are set as ranges between 1 and 100, and then v_random decides what to do.
    * v_select_pct is not set, but derived from the remainder of v_update_pct + v_delete_pct.
    */
-  v_select_pct_until := 100 - v_update_pct - v_delete_pct;
-  v_update_pct_until := v_select_pct_until + v_update_pct;
-  v_delete_pct_until := v_update_pct_until + v_delete_pct;
+  v_select_pct_until := 100 - v_run_update_pct - v_run_delete_pct;
+  v_update_pct_until := v_select_pct_until + v_run_update_pct;
+  v_delete_pct_until := v_update_pct_until + v_run_delete_pct;
 
-  raise notice 'run on schema pgio%, duration: %.", p_schema, p_runtime;
-  raise notice 'work ratios select / update / delete: % / % / %', v_select_pict_until, v_update_pct, v_delete_pct;
+  raise notice 'run on schema pgio%, duration: %.', p_schema, p_runtime;
+  raise notice 'work ratios select / update / delete: % / % / %', v_select_pct_until, v_update_pct_until, v_delete_pct_until;
   execute format('set search_path to pgio%s', p_schema);
   v_clock_batch := clock_timestamp();
 
   /*
    * main loop
    */
-  while clock_timestamp() < v_clock_begin + v_runtime loop
+  while clock_timestamp() < v_clock_begin + p_runtime loop
 
     /*
      * v_random selects the type of work based on percentages.
@@ -144,17 +157,19 @@ begin
     /*
      * report progress.
      */
-    if mod(v_select_counter+v_update_counter+v_delete_counter, v_run_rows_per_message) = 0 then
-      raise notice 'runtime: % seconds, rows: select/update/delete/notfound: %/%/%/%, average: % per second', round(extract(epoch from clock_timestamp()-v_clock_begin)), v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter, to_char(v_run_rows_per_message)/extract(epoch from clock_timestamp()-v_clock_batch)),'99999999');
+    if mod(v_select_counter+v_update_counter+v_delete_counter, v_rows_per_message) = 0 then
+      raise notice 'runtime: % seconds, rows: select / update / delete / notfound: % / % / % / %, average: % per second', round(extract(epoch from clock_timestamp()-v_clock_begin)), v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter, to_char(v_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'99999999');
       v_clock_batch := clock_timestamp();
     end if;
 
   end loop;
 
-  raise notice 'run on schema pgio%, duration: % finished.", p_schema, p_runtime;
-  raise notice 'work ratios select / update / delete: % / % / %', v_select_pict_until, v_update_pct, v_delete_pct;
-  raise notice 'rows per commit: %, rows per message: %', v_run_rows_per_commit, v_run_rows_per_message;
+  raise notice 'run on schema pgio%, duration: % finished.', p_schema, p_runtime;
+  raise notice 'work ratios select / update / delete: % / % / %', v_select_pct_until, v_update_pct, v_delete_pct;
+  raise notice 'rows per commit: %, rows per message: %', v_run_rows_per_commit, v_rows_per_message;
   raise notice 'rows processed: select / update / delete / notfound: % / % / % / %', v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter;
   raise notice 'total time: %, average number of rows per second: %', 
     round(extract(epoch from clock_timestamp()-v_clock_begin)::numeric,2), 
     to_char(round((v_select_counter+v_update_counter+v_delete_counter)/extract(epoch from clock_timestamp()-v_clock_begin)),'99999999');
+
+end $$;
