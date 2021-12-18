@@ -3,8 +3,8 @@ language plpgsql as $$
 declare
   v_create_number_schemas int;
 begin
-  select create_number_schemas, 
-  into   v_create_number_schemas, 
+  select create_number_schemas 
+  into   v_create_number_schemas 
   from   pgio.config 
   where  id = p_config_id;
   if not found then 
