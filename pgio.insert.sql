@@ -132,7 +132,7 @@ begin
 
   /*
    * end of run summary.
-   */-
+   */
   raise notice 'done inserting % rows (id % to %) into schema pgio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
   raise notice 'total time: % seconds, average number of rows per second: %', round(extract(epoch from clock_timestamp()-v_clock_begin)::numeric,2), to_char((v_end_id-v_start_id)/extract(epoch from clock_timestamp()-v_clock_begin),'999999');
 

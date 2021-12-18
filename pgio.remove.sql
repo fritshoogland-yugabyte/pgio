@@ -11,6 +11,6 @@ begin
     raise exception 'config id % not found in pgio.config table', config_id;
   end if;
   for v_schema_nr in 1..v_create_number_schemas loop
-    execute format('drop schema if exists pgio%s cascade', v_schema_nr);
+    execute format('drop schema if exists pgio%s cascade', v_create_schema_nr);
   end loop;
 end $$;
