@@ -4,6 +4,7 @@ declare
   v_number_schemas int;
   v_rows bigint;
   v_create_rows_per_commit bigint;
+  v_create_rows_per_message bigint;
   v_create_method text;
   v_create_number_schemas int;
   v_table_primary_key boolean;
@@ -32,7 +33,7 @@ begin
          index_f1_type,
          index_f1_tablets
   into   v_rows,
-         v_rows_per_message,
+         v_create_rows_per_message,
          v_create_rows_per_commit,
          v_create_method,
          v_create_number_schemas,
@@ -103,7 +104,7 @@ begin
       /*
        * call the pgio.insert procedure to perform the inserts.
        */
-      call pgio.insert(v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, v_schema_nr, p_additional_run_nr, v_create_method, v_rows_per_message );
+      call pgio.insert(v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, v_schema_nr, p_additional_run_nr, v_create_method, v_create_rows_per_message );
 
     end loop;
 
@@ -162,7 +163,7 @@ begin
     /*
      * call the pgio.insert procedure to perform the inserts.
      */
-    call pgio.insert(v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, p_perform_schema_nr, p_additional_run_nr, v_create_method, v_rows_per_message );
+    call pgio.insert(v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, p_perform_schema_nr, p_additional_run_nr, v_create_method, v_create_rows_per_message );
 
   else
 

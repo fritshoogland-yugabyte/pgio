@@ -131,6 +131,6 @@ begin
   end if;
 
   raise notice 'done inserting % rows (id % to %) into schema pgio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
-  raise notice 'total time: %, average number of rows per second: %', extract(epoch from clock_timestamp()-clock_begin), to_char(v_rows/extract(epoch from clock_timestamp()-clock_begin),'999999');
+  raise notice 'total time: %, average number of rows per second: %', extract(epoch from clock_timestamp()-v_clock_begin), to_char(v_rows/extract(epoch from clock_timestamp()-v_clock_begin),'999999');
 
 end $$;
