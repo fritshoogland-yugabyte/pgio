@@ -17,8 +17,10 @@ declare
   v_index_f1_tablets int;
 begin
 
-  -- read the configuration form the pgio.config table.
-  -- raise exception and stop if not found.
+  /*
+   * read the configuration form the pgio.config table.
+   * raise exception and stop if not found.
+   */
   select rows,
          rows_per_message,
          create_rows_per_commit,

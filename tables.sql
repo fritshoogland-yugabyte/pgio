@@ -31,7 +31,8 @@ create table pgio.config (
   table_f2_width		    int     default 100,
   run_rows_per_commit		    bigint  default 1000,
   run_update_pct		    int     default 0,
-  run_delete_pct		    int     default 0
+  run_delete_pct		    int     default 0,
+  run_range                         int     default 1
 );
 -- this table is currently not used.
 create table pgio.results (

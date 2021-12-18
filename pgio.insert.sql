@@ -109,7 +109,7 @@ begin
         raise notice 'progress: % rows, %, % rows/second', 
           v_counter-v_start_id, 
           to_char((100*(v_counter-v_start_id::float)/(v_end_id-v_start_id)),'999.99')||'%', 
-          to_char(v_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999999'
+          to_char(p_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999999'
         );
         v_clock_batch := clock_timestamp();
       end if;
