@@ -1,2 +1,2 @@
-drop schema if exists pgio cascade;
+drop schema if exists ybio cascade;
 --drop extension orafce;

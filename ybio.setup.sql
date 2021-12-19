@@ -1,4 +1,4 @@
-create or replace procedure pgio.setup ( p_config_id int, p_perform_schema_nr int default 0, p_additional_run_nr int default 0 )
+create or replace procedure ybio.setup ( p_config_id int, p_perform_schema_nr int default 0, p_additional_run_nr int default 0 )
 language plpgsql as $$
 declare
   v_number_schemas int;
@@ -6,7 +6,7 @@ declare
   v_create_rows_per_commit bigint;
   v_create_rows_per_message bigint;
   v_create_method text;
-  v_create_number_schemas int;
+  v_number_schemas int;
   v_table_primary_key boolean;
   v_table_primary_key_type text;
   v_table_tablets int;
@@ -18,14 +18,14 @@ declare
 begin
 
   /*
-   * read the configuration form the pgio.config table.
+   * read the configuration form the ybio.config table.
    * raise exception and stop if not found.
    */
   select rows,
          rows_per_message,
          create_rows_per_commit,
          create_method,
-         create_number_schemas,
+         number_schemas,
          table_primary_key,
          table_primary_key_type,
          table_tablets,
@@ -38,7 +38,7 @@ begin
          v_create_rows_per_message,
          v_create_rows_per_commit,
          v_create_method,
-         v_create_number_schemas,
+         v_number_schemas,
          v_table_primary_key,
          v_table_primary_key_type,
          v_table_tablets,
@@ -47,21 +47,21 @@ begin
          v_index_f1,
          v_index_f1_type,
          v_index_f1_tablets
-  from   pgio.config
+  from   ybio.config
   where  id = p_config_id;
   if not found then
-    raise exception 'config id % not found in pgio.config table', config_id;
+    raise exception 'config id % not found in ybio.config table', config_id;
   end if;
 
   /*
    * perform creating the schema(s) and creating the table benchmark_table in it.
    * there are two options: 
-   * p_perform_schema_nr = 0: 1 to v_create_number_schemas schemas are created serially (default)
+   * p_perform_schema_nr = 0: 1 to v_number_schemas schemas are created serially (default)
    * p_perform_schema_nr > 0: this schema number only is created.
    */
   if p_perform_schema_nr = 0 then
 
-    for v_schema_nr in 1..v_create_number_schemas loop
+    for v_schema_nr in 1..v_number_schemas loop
 
       /*
        * p_additional_run_nr makes it possible to perform an additional run of inserts into the same 
@@ -75,9 +75,9 @@ begin
         /*
          * drop and create schema, then set search_path to the schema.
          */
-        execute format('drop schema if exists pgio%s cascade', v_schema_nr);
-        execute format('create schema pgio%s', v_schema_nr);
-        execute format('set search_path to pgio%s', v_schema_nr);
+        execute format('drop schema if exists ybio%s cascade', v_schema_nr);
+        execute format('create schema ybio%s', v_schema_nr);
+        execute format('set search_path to ybio%s', v_schema_nr);
 
         /* 
          * create the table and optionally the index.
@@ -99,14 +99,14 @@ begin
         /*
          * p_additional_run_nr is > 0: just set search_path.
          */
-        execute format('set search_path to pgio%s', v_schema_nr);
+        execute format('set search_path to ybio%s', v_schema_nr);
 
       end if;
 
       /*
-       * call the pgio.insert procedure to perform the inserts.
+       * call the ybio.insert procedure to perform the inserts.
        */
-      call pgio.insert(v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, v_schema_nr, p_additional_run_nr, v_create_method, v_create_rows_per_message );
+      call ybio.insert(v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, v_schema_nr, p_additional_run_nr, v_create_method, v_create_rows_per_message );
 
     end loop;
 
@@ -123,7 +123,7 @@ begin
 
       /*
        * p_perform_schema_nr allows specifying a single schema number to be done.
-       * However, it must be within the bounds of the number of schemas set by v_number_schemas from the pgio.config table.
+       * However, it must be within the bounds of the number of schemas set by v_number_schemas from the ybio.config table.
        */
       if p_perform_schema_nr > v_number_schemas then
 
@@ -134,9 +134,9 @@ begin
       /*
        * drop and create schema, then set search_path to the schema.
        */
-      execute format('drop schema if exists pgio%s cascade', p_perform_schema_nr);
-      execute format('create schema pgio%s', p_perform_schema_nr);
-      execute format('set search_path to pgio%s', p_perform_schema_nr);
+      execute format('drop schema if exists ybio%s cascade', p_perform_schema_nr);
+      execute format('create schema ybio%s', p_perform_schema_nr);
+      execute format('set search_path to ybio%s', p_perform_schema_nr);
 
       /*
        * create the table and optionally the index.
@@ -158,14 +158,14 @@ begin
       /*
        * p_additional_run_nr is > 0: just set search_path.
        */
-      execute format('set search_path to pgio%s', perform_schema_nr);
+      execute format('set search_path to ybio%s', perform_schema_nr);
 
     end if;
 
     /*
-     * call the pgio.insert procedure to perform the inserts.
+     * call the ybio.insert procedure to perform the inserts.
      */
-    call pgio.insert(v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, p_perform_schema_nr, p_additional_run_nr, v_create_method, v_create_rows_per_message );
+    call ybio.insert(v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, p_perform_schema_nr, p_additional_run_nr, v_create_method, v_create_rows_per_message );
 
   else
 

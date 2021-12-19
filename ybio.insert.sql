@@ -1,4 +1,4 @@
-create or replace procedure pgio.insert( p_rows bigint, p_create_rows_per_commit bigint, p_table_f2_width int, p_table_f1_range bigint, p_schema int, p_additional_run_nr int, p_create_method text default 'unnest', p_rows_per_message bigint default 0  )
+create or replace procedure ybio.insert( p_rows bigint, p_create_rows_per_commit bigint, p_table_f2_width int, p_table_f1_range bigint, p_schema int, p_additional_run_nr int, p_create_method text default 'unnest', p_rows_per_message bigint default 0  )
 language plpgsql as $$
 declare
   array_id bigint[];
@@ -9,7 +9,7 @@ declare
   v_start_id int := p_rows * p_additional_run_nr;
   v_end_id int := v_start_id + p_rows - 1;
 begin
-  raise notice 'inserting % rows (id % to %) into schema pgio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
+  raise notice 'inserting % rows (id % to %) into schema ybio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
   raise notice 'rows per commit: %', p_create_rows_per_commit;
   v_clock_batch := clock_timestamp();
 
@@ -133,7 +133,7 @@ begin
   /*
    * end of run summary.
    */
-  raise notice 'done inserting % rows (id % to %) into schema pgio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
+  raise notice 'done inserting % rows (id % to %) into schema ybio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
   raise notice 'total time: % seconds, average number of rows per second: %', round(extract(epoch from clock_timestamp()-v_clock_begin)::numeric,2), to_char((v_end_id-v_start_id)/extract(epoch from clock_timestamp()-v_clock_begin),'999999');
 
 end $$;

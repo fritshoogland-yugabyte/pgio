@@ -1,1 +1,1 @@
-create schema pgio;
+create schema ybio;
