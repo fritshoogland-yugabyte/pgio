@@ -1,7 +1,6 @@
 create or replace procedure ybio.setup ( p_config_id int, p_perform_schema_nr int default 0, p_additional_run_nr int default 0 )
 language plpgsql as $$
 declare
-  v_number_schemas int;
   v_rows bigint;
   v_create_rows_per_commit bigint;
   v_create_rows_per_message bigint;
