@@ -33,24 +33,25 @@ This means it's possible to create a second configuration with slightly changed 
 
 The table ybio.config has default values for every column, so you only have to change the fields you want to have a different value for:
 ```
-  id 				    serial  primary key,
-  rows 				    bigint  default 1000000,
-  rows_per_message                  int     default 0,
-  number_schemas		    int     default 1,
-  create_rows_per_commit 	    bigint  default 1000,
-  create_method                     text    default 'unnest',
-  table_primary_key		    boolean default true,
-  table_primary_key_type	    text    default 'hash',
-  table_tablets			    int     default 0,
-  table_f1_range		    bigint  default 1000000,
-  table_f2_width		    int     default 100,
-  index_f1			    boolean default false,
-  index_f1_type			    text    default 'hash',
-  index_f1_tablets		    int     default 0,
-  run_rows_per_commit		    bigint  default 10000,
-  run_update_pct		    int     default 0,
-  run_delete_pct		    int     default 0,
-  run_range                         int     default 1
+  id 				    serial   primary key,
+  rows 				    bigint   default 1000000,
+  rows_per_message                  int      default 0,
+  number_schemas		    int      default 1,
+  create_rows_per_commit 	    bigint   default 1000,
+  create_method                     text     default 'unnest',
+  table_primary_key		    boolean  default true,
+  table_primary_key_type	    text     default 'hash',
+  table_tablets			    int      default 0,
+  table_f1_range		    bigint   default 1000000,
+  table_f2_width		    int      default 100,
+  index_f1			    boolean  default false,
+  index_f1_type			    text     default 'hash',
+  index_f1_tablets		    int      default 0,
+  run_rows_per_commit		    bigint   default 10000,
+  run_update_pct		    int      default 0,
+  run_delete_pct		    int      default 0,
+  run_range                         int      default 1,
+  run_time			    interval default '30 minutes'
 ```
 The ybio.config table is ordered by 5 category type of fields:
 1. The first 4 fields are general fields, and apply to setup and run.
@@ -77,6 +78,7 @@ The ybio.config table is ordered by 5 category type of fields:
 - run_update_pct: this option sets the percentage of update statements during ybio.run. Selects are performed for the remainder of 100-run_update_pct-run_delete_pct. You are responsible for making sure run_update_pct+run_delete_pct does not exceed 100.
 - run_delete_pct: this option sets the percentage of delete statements during ybio.run. Selects are performed for the remainder of 100-run_update_pct-run_delete_pct. You are responsible for making sure run_update_pct+run_delete_pct does not exceed 100.
 - run_range: the number range for an executed select, update or delete during ybio.run. The default value is 1, which means the statements are executed with 'id = <nr>'. Setting it > 1 makes the statements be executed with 'id between <nr> and <nr>'. 
+- run_time: this is an interval that defines how long the ybio.run procedure should run. Being an interval, you can specify something like '1 hour', '60 seconds', etc.
 
 Because every field has a default value, you only have to specify a field that you want to be different from the default value. You have to specify at least one field during an insert statement though.
 
@@ -122,8 +124,7 @@ call ybio.setup(1);
 
 # Run
 - The first argument is the ybio.config.id number, and is mandatory.
-- The second argument is the run time specified as interval, and defaults to '1 minute'.
-- The third argument is the ybio<nr> schema number, and defaults to 1. Numbers are valid limited the value of ybio.config.number_schemas.
+- The second argument is the ybio<nr> schema number, and defaults to 1. Numbers are valid from 1 to the value of ybio.config.number_schemas.
 ```
 call ybio.run(1);
 ```
