@@ -122,7 +122,8 @@ call ybio.setup(1);
 
 # Run
 - The first argument is the ybio.config.id number, and is mandatory.
-- The second number is optional, and defaults to 1. It allows to specify a number for the schema to run against.
+- The second argument is the run time specified as interval, and defaults to '1 minute'.
+- The third argument is the ybio<nr> schema number, and defaults to 1. Numbers are valid limited the value of ybio.config.number_schemas.
 ```
 call ybio.run(1);
 ```

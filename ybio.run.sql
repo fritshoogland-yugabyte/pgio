@@ -1,4 +1,4 @@
-create or replace procedure ybio.run( p_config_id int, p_schema int default 1, p_runtime interval default interval '1 minute' )
+create or replace procedure ybio.run( p_config_id int, p_runtime interval default interval '1 minute', p_schema int default 1 )
 language plpgsql as $$
 declare
   v_rows bigint;
