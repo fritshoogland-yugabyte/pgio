@@ -1,4 +1,4 @@
-create or replace procedure ybio.run( p_config_id int, p_runtime interval default interval '1 minute', p_schema int default 1 )
+create or replace procedure ybio.run( p_config_id int, p_schema int default 1 )
 language plpgsql as $$
 declare
   v_rows bigint;
@@ -10,6 +10,7 @@ declare
   v_run_update_pct int;
   v_run_delete_pct int; 
   v_run_range int;
+  v_run_time interval;
   v_select_pct_until int;
   v_update_pct_until int;
   v_delete_pct_until int;
@@ -36,18 +37,20 @@ begin
          table_f1_range,
          table_f2_width,
          run_rows_per_commit,
-         run_range,
          run_update_pct,
-         run_delete_pct
+         run_delete_pct,
+         run_range,
+         run_time
   into   v_rows,
          v_rows_per_message,
          v_number_schemas,
          v_table_f1_range,
          v_table_f2_width,
          v_run_rows_per_commit,
-         v_run_range,
          v_run_update_pct,
-         v_run_delete_pct
+         v_run_delete_pct,
+         v_run_range,
+         v_run_time
   from   ybio.config
   where  id = p_config_id;
   if not found then
@@ -80,7 +83,7 @@ begin
   v_update_pct_until := v_select_pct_until + v_run_update_pct;
   v_delete_pct_until := v_update_pct_until + v_run_delete_pct;
 
-  raise notice 'run on schema ybio%, duration: %.', p_schema, p_runtime;
+  raise notice 'run on schema ybio%, duration: %.', p_schema, v_run_time;
   raise notice 'work ratios select / update / delete: % / % / %', v_select_pct_until, v_run_update_pct, v_run_delete_pct;
   raise notice 'selected id range in scan: %', v_run_range;
   execute format('set search_path to ybio%s', p_schema);
@@ -89,7 +92,7 @@ begin
   /*
    * main loop
    */
-  while clock_timestamp() < v_clock_begin + p_runtime loop
+  while clock_timestamp() < v_clock_begin + v_run_time loop
 
     /*
      * v_random selects the type of work based on percentages.
@@ -175,7 +178,7 @@ begin
   /*
    * end of run summary.
    */
-  raise notice 'finished run on schema ybio%, duration: %.', p_schema, p_runtime;
+  raise notice 'finished run on schema ybio%, duration: %.', p_schema, v_run_time;
   raise notice 'rows per commit: %, rows per message: %', v_run_rows_per_commit, v_rows_per_message;
   raise notice '% sec, rows: sel %, upd %, del %, nfd %, avg: % p/s, avg lat % s',
     to_char(round(extract(epoch from clock_timestamp()-v_clock_begin)),'999G999G999'),
