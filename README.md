@@ -17,9 +17,9 @@ To remove:
 ```
 \i uninstall.sql
 ```
-Please mind:
--uninstall.sql will not remove any schema's with the benchmark_table table in it.
--uninstall does not remove the orafce extension, if you want to remove that, run `drop extension orafce;`.
+Please mind:  
+-uninstall.sql will not remove any schema's with the benchmark_table table in it.  
+-uninstall does not remove the orafce extension, if you want to remove that, run `drop extension orafce;`.  
 
 # Setup
 In order to use ybio, you must follow the following steps:
