@@ -159,7 +159,14 @@ begin
      * report progress.
      */
     if mod(v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter, v_rows_per_message) = 0 then
-      raise notice 'runtime: % seconds, rows: select / update / delete / notfound: % / % / % / %, average: % per second', round(extract(epoch from clock_timestamp()-v_clock_begin)), v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter, to_char(v_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'99999999');
+      raise notice '% sec, rows: sel %, upd %, del %, nfd %, avg: % p/s, avg lat % s',
+        to_char(round(extract(epoch from clock_timestamp()-v_clock_begin)),'999G999G999'),
+        to_char(v_select_counter,'999G999G999'),
+        to_char(v_update_counter,'999G999G999'),
+        to_char(v_delete_counter,'999G999G999'),
+        to_char(v_notfound_counter,'999G999G999'),
+        to_char(v_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999G999'),
+        to_char(extract(epoch from clock_timestamp()-v_clock_batch)/v_rows_per_message,'999.999999');
       v_clock_batch := clock_timestamp();
     end if;
 
@@ -168,12 +175,20 @@ begin
   /*
    * end of run summary.
    */
-  raise notice 'run on schema ybio%, duration: % finished.', p_schema, p_runtime;
-  raise notice 'work ratios select / update / delete: % / % / %; range: %', v_select_pct_until, v_run_update_pct, v_run_delete_pct, v_run_range;
+  raise notice 'finished run on schema ybio%, duration: %.', p_schema, p_runtime;
   raise notice 'rows per commit: %, rows per message: %', v_run_rows_per_commit, v_rows_per_message;
-  raise notice 'rows processed: select / update / delete / notfound: % / % / % / %', v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter;
-  raise notice 'total time: % seconds, average number of rows per second: %', 
-    round(extract(epoch from clock_timestamp()-v_clock_begin)::numeric,2), 
-    to_char((v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter)/extract(epoch from clock_timestamp()-v_clock_begin),'99999999');
+  raise notice '% sec, rows: sel %, upd %, del %, nfd %, avg: % p/s, avg lat % s',
+    to_char(round(extract(epoch from clock_timestamp()-v_clock_begin)),'999G999G999'),
+    to_char(v_select_counter,'999G999G999'),
+    to_char(v_update_counter,'999G999G999'),
+    to_char(v_delete_counter,'999G999G999'),
+    to_char(v_notfound_counter,'999G999G999'),
+    to_char((v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter)/extract(epoch from clock_timestamp()-v_clock_begin),'999G999'),
+    to_char(extract(epoch from clock_timestamp()-v_clock_begin)/v_rows_per_message,'999.999999');
+  raise notice '                     %: sel %, upd %, del %',
+    '%',
+    to_char(v_select_pct_until,'999G999G999'),
+    to_char(v_run_update_pct,'999G999G999'),
+    to_char(v_run_delete_pct,'999G999G999');
 
 end $$;
