@@ -166,7 +166,7 @@ begin
         to_char(v_delete_counter,'999G999G999'),
         to_char(v_notfound_counter,'999G999G999'),
         to_char(v_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999G999'),
-        to_char(extract(epoch from clock_timestamp()-v_clock_batch)/v_rows_per_message,'999.999999');
+        to_char(extract(epoch from clock_timestamp()-v_clock_batch)/v_rows_per_message,'999.999G999');
       v_clock_batch := clock_timestamp();
     end if;
 
@@ -184,7 +184,7 @@ begin
     to_char(v_delete_counter,'999G999G999'),
     to_char(v_notfound_counter,'999G999G999'),
     to_char((v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter)/extract(epoch from clock_timestamp()-v_clock_begin),'999G999'),
-    to_char(extract(epoch from clock_timestamp()-v_clock_begin)/v_rows_per_message,'999.999999');
+    to_char(extract(epoch from clock_timestamp()-v_clock_begin)/(v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter),'999.999G999');
   raise notice '                     %: sel %, upd %, del %',
     '%',
     to_char(v_select_pct_until,'999G999G999'),

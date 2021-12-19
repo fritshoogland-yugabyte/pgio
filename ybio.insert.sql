@@ -109,8 +109,8 @@ begin
         raise notice 'progress: % rows, %; % rows/s avg lat % s',
           to_char(v_counter-v_start_id,'999G999G999G999'),
           to_char((100*(v_counter-v_start_id::float)/(v_end_id-v_start_id)),'999.99')||' %',
-          to_char(p_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999999'),
-          to_char(extract(epoch from clock_timestamp()-v_clock_batch)/p_rows_per_message,'9999.999999');
+          to_char(p_rows_per_message/extract(epoch from clock_timestamp()-v_clock_batch),'999G999'),
+          to_char(extract(epoch from clock_timestamp()-v_clock_batch)/p_rows_per_message,'9999.999G999');
         v_clock_batch := clock_timestamp();
       end if;
 
@@ -138,7 +138,7 @@ begin
   raise notice 'progress: % rows, %; % rows/s avg lat % s',
     to_char(v_end_id-v_start_id,'999G999G999G999'),
     to_char((100*(v_end_id-v_start_id::float)/(v_end_id-v_start_id)),'999.99')||' %',
-    to_char((v_end_id-v_start_id)/extract(epoch from clock_timestamp()-v_clock_begin),'999999'),
-    to_char(extract(epoch from clock_timestamp()-v_clock_begin)/(v_end_id-v_start_id),'9999.999999');
+    to_char((v_end_id-v_start_id)/extract(epoch from clock_timestamp()-v_clock_begin),'999G999'),
+    to_char(extract(epoch from clock_timestamp()-v_clock_begin)/(v_end_id-v_start_id),'9999.999G999');
 
 end $$;
