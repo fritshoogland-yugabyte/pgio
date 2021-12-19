@@ -78,7 +78,7 @@ The ybio.config table is ordered by 5 category type of fields:
 - run_update_pct: this option sets the percentage of update statements during ybio.run. Selects are performed for the remainder of 100-run_update_pct-run_delete_pct. You are responsible for making sure run_update_pct+run_delete_pct does not exceed 100.
 - run_delete_pct: this option sets the percentage of delete statements during ybio.run. Selects are performed for the remainder of 100-run_update_pct-run_delete_pct. You are responsible for making sure run_update_pct+run_delete_pct does not exceed 100.
 - run_range: the number range for an executed select, update or delete during ybio.run. The default value is 1, which means the statements are executed with 'id = <nr>'. Setting it > 1 makes the statements be executed with 'id between <nr> and <nr>'. 
-- run_time: this is an interval that defines how long the ybio.run procedure should run. Being an interval, you can specify something like '1 hour', '60 seconds', etc.
+- run_time: this is an interval that defines how long the ybio.run procedure should run. Being an interval, you can specify something like '1 hour', '60 seconds', etc.  
 
 Because every field has a default value, you only have to specify a field that you want to be different from the default value. You have to specify at least one field during an insert statement though.
 
