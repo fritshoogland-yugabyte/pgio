@@ -87,9 +87,30 @@ insert into ybio.config (rows) values (1000000);
 ```
 2. Verify config:
 ```
-\x
-...........dkdkdkd
+yugabyte=# \x
+Expanded display is on.
+yugabyte=# select * from ybio.config;
+-[ RECORD 1 ]----------+--------
+id                     | 1
+rows                   | 1000000
+rows_per_message       | 0
+number_schemas         | 1
+create_rows_per_commit | 1000
+create_method          | unnest
+table_primary_key      | t
+table_primary_key_type | hash
+table_tablets          | 0
+table_f1_range         | 1000000
+table_f2_width         | 100
+index_f1               | f
+index_f1_type          | hash
+index_f1_tablets       | 0
+run_rows_per_commit    | 10000
+run_update_pct         | 0
+run_delete_pct         | 0
+run_range              | 1
 ```
+  
 3. Execute setup: 
 - Please mind that the default behavior of setup is to drop the schema before creation.
 - The first argument for ybio.setup is the ybio.config.id number, and is mandatory.
