@@ -133,9 +133,16 @@ begin
   /*
    * end of run summary.
    */
-  raise notice 'done inserting % rows (id % to %) into schema ybio%', v_end_id-v_start_id, v_start_id, v_end_id, p_schema;
-  raise notice 'method: %, rows per commit: %', p_create_method, p_create_rows_per_commit;
-  raise notice 'progress: % rows, %; % rows/s avg lat % s',
+  raise notice 'done inserting % rows (id % to %) into schema ybio%', 
+    v_end_id-v_start_id, 
+    v_start_id, 
+    v_end_id, 
+    p_schema;
+  raise notice 'method: %, rows per commit: %, total time: %', 
+    p_create_method, 
+    p_create_rows_per_commit, 
+    to_char(extract(epoch from clock_timestamp()-v_clock_begin))::interval;
+  raise notice 'total   : % rows, %; % rows/s avg lat % s',
     to_char(v_end_id-v_start_id,'999G999G999G999'),
     to_char((100*(v_end_id-v_start_id::float)/(v_end_id-v_start_id)),'999.99')||' %',
     to_char((v_end_id-v_start_id)/extract(epoch from clock_timestamp()-v_clock_begin),'999G999'),
