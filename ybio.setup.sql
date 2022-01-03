@@ -157,7 +157,7 @@ begin
       /*
        * p_additional_run_nr is > 0: just set search_path.
        */
-      execute format('set search_path to ybio%s', perform_schema_nr);
+      execute format('set search_path to ybio%s', p_perform_schema_nr);
 
     end if;
 
