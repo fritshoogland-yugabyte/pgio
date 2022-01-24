@@ -124,9 +124,31 @@ begin
        */
       when v_random <= v_update_pct_until then 
         if v_run_range = 1 then
-          update benchmark_table set f1=dbms_random.value(1,v_table_f1_range), f2=dbms_random.string('a',v_table_f2_width) where id = v_random_row;
+          --update benchmark_table set f1=dbms_random.value(1,v_table_f1_range), f2=dbms_random.string('a',v_table_f2_width) where id = v_random_row;
+          update benchmark_table set f1=dbms_random.value(1,v_table_f1_range), 
+                                     f2=dbms_random.string('a',v_table_f2_width), 
+                                     f3=dbms_random.string('a',v_table_f2_width), 
+                                     f4=dbms_random.string('a',v_table_f2_width), 
+                                     f5=dbms_random.string('a',v_table_f2_width), 
+                                     f6=dbms_random.string('a',v_table_f2_width), 
+                                     f7=dbms_random.string('a',v_table_f2_width), 
+                                     f8=dbms_random.string('a',v_table_f2_width), 
+                                     f9=dbms_random.string('a',v_table_f2_width), 
+                                     f10=dbms_random.string('a',v_table_f2_width) 
+                                 where id = v_random_row;
         else
-          update benchmark_table set f1=dbms_random.value(1,v_table_f1_range), f2=dbms_random.string('a',v_table_f2_width) where id between v_random_row and v_random_row+v_run_range-1;
+          --update benchmark_table set f1=dbms_random.value(1,v_table_f1_range), f2=dbms_random.string('a',v_table_f2_width) where id between v_random_row and v_random_row+v_run_range-1;
+          update benchmark_table set f1=dbms_random.value(1,v_table_f1_range), 
+                                     f2=dbms_random.string('a',v_table_f2_width), 
+                                     f3=dbms_random.string('a',v_table_f2_width), 
+                                     f4=dbms_random.string('a',v_table_f2_width), 
+                                     f5=dbms_random.string('a',v_table_f2_width), 
+                                     f6=dbms_random.string('a',v_table_f2_width), 
+                                     f7=dbms_random.string('a',v_table_f2_width), 
+                                     f8=dbms_random.string('a',v_table_f2_width), 
+                                     f9=dbms_random.string('a',v_table_f2_width), 
+                                     f10=dbms_random.string('a',v_table_f2_width) 
+                                 where id between v_random_row and v_random_row+v_run_range-1;
         end if;
         if not found then
           v_notfound_counter := v_notfound_counter + 1;

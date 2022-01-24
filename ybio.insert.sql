@@ -40,16 +40,32 @@ begin
       array_id[v_counter] := v_counter;
       array_f1[v_counter] := dbms_random.value(1,p_table_f1_range);
       array_f2[v_counter] := dbms_random.string('a',p_table_f2_width);
+      array_f3[v_counter] := dbms_random.string('a',p_table_f2_width);
+      array_f4[v_counter] := dbms_random.string('a',p_table_f2_width);
+      array_f5[v_counter] := dbms_random.string('a',p_table_f2_width);
+      array_f6[v_counter] := dbms_random.string('a',p_table_f2_width);
+      array_f7[v_counter] := dbms_random.string('a',p_table_f2_width);
+      array_f8[v_counter] := dbms_random.string('a',p_table_f2_width);
+      array_f9[v_counter] := dbms_random.string('a',p_table_f2_width);
+      array_f10[v_counter] := dbms_random.string('a',p_table_f2_width);
 
       /*
        * insert the rows using the array, commit and then empty the array.
        */
       if mod(v_counter, p_create_rows_per_commit) = 0 then
-        insert into benchmark_table (id, f1, f2)
-          select unnest(array_id), unnest(array_f1), unnest(array_f2);
+        insert into benchmark_table (id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10)
+          select unnest(array_id), unnest(array_f1), unnest(array_f2), unnest(array_f5), unnest(array_f4), unnest(array_f5), unnest(array_f6), unnest(array_f7), unnest(array_f8), unnest(array_f9), unnest(array_f10);
         array_id := '{}';
         array_f1 := '{}';
         array_f2 := '{}';
+        array_f3 := '{}';
+        array_f4 := '{}';
+        array_f5 := '{}';
+        array_f6 := '{}';
+        array_f7 := '{}';
+        array_f8 := '{}';
+        array_f9 := '{}';
+        array_f10 := '{}';
         commit;
       end if;
 
@@ -71,8 +87,8 @@ begin
      * if there is a leftover in the array, insert it and commit.
      */
     if array_length(array_id,1) > 0 then
-      insert into benchmark_table (id, f1, f2)
-        select unnest(array_id), unnest(array_f1), unnest(array_f2);
+      insert into benchmark_table (id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10)
+        select unnest(array_id), unnest(array_f1), unnest(array_f2), unnest(array_f5), unnest(array_f4), unnest(array_f5), unnest(array_f6), unnest(array_f7), unnest(array_f8), unnest(array_f9), unnest(array_f10);
       commit;
     end if;
 
@@ -93,7 +109,19 @@ begin
       /*
        * the insert command.
        */
-      insert into benchmark_table (id, f1, f2) values (v_counter, dbms_random.value(1,p_table_f1_range), dbms_random.string('a',p_table_f2_width));
+      insert into benchmark_table (id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10) 
+        values (v_counter, 
+                dbms_random.value(1,p_table_f1_range), 
+                dbms_random.string('a',p_table_f2_width), 
+                dbms_random.string('a',p_table_f2_width), 
+                dbms_random.string('a',p_table_f2_width), 
+                dbms_random.string('a',p_table_f2_width), 
+                dbms_random.string('a',p_table_f2_width), 
+                dbms_random.string('a',p_table_f2_width), 
+                dbms_random.string('a',p_table_f2_width), 
+                dbms_random.string('a',p_table_f2_width), 
+                dbms_random.string('a',p_table_f2_width)
+               );
 
       /*
        * commit.
