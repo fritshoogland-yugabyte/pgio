@@ -4,6 +4,14 @@ declare
   array_id bigint[];
   array_f1 bigint[];
   array_f2 text[];
+  array_f3 text[];
+  array_f4 text[];
+  array_f5 text[];
+  array_f6 text[];
+  array_f7 text[];
+  array_f8 text[];
+  array_f9 text[];
+  array_f10 text[];
   v_clock_batch timestamp;
   v_clock_begin timestamp := clock_timestamp();
   v_start_id int := p_rows * p_additional_run_nr;
