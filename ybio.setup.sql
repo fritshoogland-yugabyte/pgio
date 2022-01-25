@@ -141,7 +141,8 @@ begin
       /*
        * create the table and optionally the index.
        */
-      execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text %s ) %s',
+      --execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text %s ) %s',
+      execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text, f3 text, f4 text, f5 text, f6 text, f7 text, f8 text, f9 text, f10 text %s ) %s',
         case v_table_primary_key when true then format(', primary key ( id %s)', v_table_primary_key_type) else '' end,
         case v_table_tablets when 0 then '' else format('split into %s tablets', v_table_tablets) end
       );
