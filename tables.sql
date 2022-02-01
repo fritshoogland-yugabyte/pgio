@@ -29,7 +29,7 @@ create table ybio.results (
   config_id		            serial,
   start_time  		            timestamp,
   end_time		            timestamp,
-  inet_server_addrs		    inet,
+  inet_server_addr		    inet,
   pg_backend_pid		    integer,
   nr_total			    bigint,
   nr_insert			    bigint,
