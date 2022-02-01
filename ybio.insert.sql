@@ -200,7 +200,7 @@ begin
    * insert into ybio.results table
    */
   insert into ybio.results 
-    (config_id, start_time, end_ttime, inet_server_addrs, pg_backend_pid, nr_total, nr_insert, nr_select, nr_update, nr_delete, nr_notfound, run_tag )
+    (config_id, start_time, end_time, inet_server_addrs, pg_backend_pid, nr_total, nr_insert, nr_select, nr_update, nr_delete, nr_notfound, run_tag )
     values
     (p_config_id, v_clock_begin, v_clock_end, inet_server_addrs(), pg_backed_pid(), v_end_id-v_start_id, v_end_id-v_start_id, 0, 0, 0, 0, p_run_tag );
   
