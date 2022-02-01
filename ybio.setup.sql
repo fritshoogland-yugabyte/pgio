@@ -106,7 +106,7 @@ begin
       /*
        * call the ybio.insert procedure to perform the inserts.
        */
-      call ybio.insert(p_config_id, v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, v_schema_nr, p_additional_run_nr, v_create_method, v_create_rows_per_message );
+      call ybio.insert(p_config_id, v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, v_schema_nr, p_additional_run_nr, p_run_tag, v_create_method, v_create_rows_per_message );
 
     end loop;
 
@@ -166,7 +166,7 @@ begin
     /*
      * call the ybio.insert procedure to perform the inserts.
      */
-    call ybio.insert(p_config_id, v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, p_perform_schema_nr, p_additional_run_nr, v_create_method, v_create_rows_per_message );
+    call ybio.insert(p_config_id, v_rows, v_create_rows_per_commit, v_table_f2_width, v_table_f1_range, p_perform_schema_nr, p_additional_run_nr, p_run_tag, v_create_method, v_create_rows_per_message );
 
   else
 
