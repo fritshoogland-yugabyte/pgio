@@ -26,7 +26,16 @@ create table ybio.config (
 );
 -- this table is currently not used.
 create table ybio.results (
-  run_id		            serial,
+  config_id		            serial,
   start_time  		            timestamp,
-  end_time		            timestamp
+  end_time		            timestamp,
+  inet_server_addrs		    inet,
+  pg_backend_pid		    integer,
+  nr_total			    bigint,
+  nr_insert			    bigint,
+  nr_select			    bigint,
+  nr_update			    bigint,
+  nr_delete			    bigint,
+  nr_notfound			    bigint,
+  run_tag			    text
 );

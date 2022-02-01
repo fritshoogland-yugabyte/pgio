@@ -1,4 +1,4 @@
-create or replace procedure ybio.run( p_config_id int, p_schema int default 1 )
+create or replace procedure ybio.run( p_config_id int, p_schema int default 1, p_run_tag text default 'run' )
 language plpgsql as $$
 declare
   v_rows bigint;
@@ -24,6 +24,7 @@ declare
   v_delete_counter bigint := 0;
   v_notfound_counter bigint := 0;
   v_clock_begin timestamp := clock_timestamp();
+  v_clock_end timestamp;
   v_clock_batch timestamp; 
 begin
 
@@ -200,6 +201,7 @@ begin
   /*
    * end of run summary.
    */
+  v_clock_end := clock_timestamp();
   raise notice 'finished run on schema ybio%, duration: %.', p_schema, v_run_time;
   raise notice 'rows per commit: %, rows per message: %', v_run_rows_per_commit, v_rows_per_message;
   raise notice '% sec, rows: sel %, upd %, del %, nfd %, avg: % p/s, avg lat % s',
@@ -215,5 +217,11 @@ begin
     to_char(v_select_pct_until,'999G999G999'),
     to_char(v_run_update_pct,'999G999G999'),
     to_char(v_run_delete_pct,'999G999G999');
+
+  insert into ybio.results 
+    (config_id, start_time, end_ttime, inet_server_addrs, pg_backend_pid, nr_total, nr_insert, nr_select, nr_update, nr_delete, nr_notfound, run_tag )
+    values
+    (p_config_id, v_clock_begin, v_clock_end, inet_server_addrs(), pg_backed_pid(), (v_select_counter+v_update_counter+v_delete_counter+v_notfound_counter), 0, v_select_counter, v_update_counter, v_delete_counter, v_notfound_counter,  p_run_tag);
+   
 
 end $$;
