@@ -6,6 +6,7 @@ declare
   v_create_rows_per_message bigint;
   v_create_method text;
   v_number_schemas int;
+  v_drop_before_insert boolean;
   v_table_primary_key boolean;
   v_table_primary_key_type text;
   v_table_tablets int;
@@ -22,9 +23,10 @@ begin
    */
   select rows,
          rows_per_message,
+         number_schemas,
+         drop_before_insert,
          create_rows_per_commit,
          create_method,
-         number_schemas,
          table_primary_key,
          table_primary_key_type,
          table_tablets,
@@ -35,9 +37,10 @@ begin
          index_f1_tablets
   into   v_rows,
          v_create_rows_per_message,
+         v_number_schemas,
+         v_drop_before_insert,
          v_create_rows_per_commit,
          v_create_method,
-         v_number_schemas,
          v_table_primary_key,
          v_table_primary_key_type,
          v_table_tablets,
@@ -68,8 +71,11 @@ begin
        * Allowed values are:
        * p_additional_run_nr = 0: drop and create schema and load.
        * p_additional_run_nr > 0: just perform the insert.
+       *
+       * also, when drop_before_insert is set to false, we skip dropping and creating the table.
+       * this makes it possible to define your own table.
        */
-      if p_additional_run_nr = 0 then
+      if p_additional_run_nr = 0 or not v_drop_before_insert then
 
         /*
          * drop and create schema, then set search_path to the schema.
@@ -81,7 +87,6 @@ begin
         /* 
          * create the table and optionally the index.
          */
-        --execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text %s ) %s',
         execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text, f3 text, f4 text, f5 text, f6 text, f7 text, f8 text, f9 text, f10 text %s ) %s',
           case v_table_primary_key when true then format(', primary key ( id %s)', v_table_primary_key_type) else '' end,
           case v_table_tablets when 0 then '' else format('split into %s tablets', v_table_tablets) end
@@ -118,8 +123,11 @@ begin
      * Allowed values are:
      * p_additional_run_nr = 0: drop and create schema and load.
      * p_additional_run_nr > 0: just perform the insert.
+     *
+     * also, when drop_before_insert is set to false, we skip dropping and creating the table.
+     * this makes it possible to define your own table.
      */
-    if p_additional_run_nr = 0 then
+    if p_additional_run_nr = 0 or not v_drop_before_insert then
 
       /*
        * p_perform_schema_nr allows specifying a single schema number to be done.
@@ -141,7 +149,6 @@ begin
       /*
        * create the table and optionally the index.
        */
-      --execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text %s ) %s',
       execute format('create table benchmark_table ( id bigint, f1 bigint, f2 text, f3 text, f4 text, f5 text, f6 text, f7 text, f8 text, f9 text, f10 text %s ) %s',
         case v_table_primary_key when true then format(', primary key ( id %s)', v_table_primary_key_type) else '' end,
         case v_table_tablets when 0 then '' else format('split into %s tablets', v_table_tablets) end

@@ -8,6 +8,7 @@ create table ybio.config (
   rows 				    bigint   default 1000000,
   rows_per_message                  int      default 0,
   number_schemas		    int      default 1,
+  drop_before_insert		    boolean  default true,
   create_rows_per_commit 	    bigint   default 1000,
   create_method                     text     default 'unnest',
   table_primary_key		    boolean  default true,
