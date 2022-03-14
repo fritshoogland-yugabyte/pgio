@@ -75,7 +75,7 @@ begin
        * also, when drop_before_insert is set to false, we skip dropping and creating the table.
        * this makes it possible to define your own table.
        */
-      if p_additional_run_nr = 0 or not v_drop_before_insert then
+      if p_additional_run_nr = 0 and v_drop_before_insert then
 
         /*
          * drop and create schema, then set search_path to the schema.
@@ -127,7 +127,7 @@ begin
      * also, when drop_before_insert is set to false, we skip dropping and creating the table.
      * this makes it possible to define your own table.
      */
-    if p_additional_run_nr = 0 or not v_drop_before_insert then
+    if p_additional_run_nr = 0 and v_drop_before_insert then
 
       /*
        * p_perform_schema_nr allows specifying a single schema number to be done.
